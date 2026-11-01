@@ -1,14 +1,16 @@
 # EdgeFX for Omarchy
 
-A small Omarchy/Quickshell MVP for animated, theme-aware screen-edge lighting.
+A small Omarchy/Quickshell MVP for animated, theme-aware screen-edge lighting. It is inspired by the attached Edgy-style reference: a soft perimeter glow, selectable scenes, color controls, brightness, and beat-reactive intensity.
 
 ## Features
 
 - Click-through Wayland overlay on every active monitor.
-- Four presets: `ambient`, `flow`, `pulse`, and `alert`.
-- Moving perimeter energy segment for non-ambient presets.
-- Accent color, intensity, speed, and enabled state through Omarchy IPC.
-- Bar widget with quick toggle and preset picker.
+- Animated perimeter glow with moving color segments.
+- Scene presets: `Rainbow`, `Sunset`, `Ocean`, `Aurora`, `Fire`, `Ambient`, `Pulse`, and `Alert`.
+- Color swatches for quickly changing the accent in the popup.
+- Brightness/intensity slider.
+- Optional audio synchronization driven by a dependency-light PipeWire/PulseAudio RMS bridge.
+- Omarchy IPC controls and bar widget with quick toggle and scene picker.
 - Optional Hyprland event bridge for workspace/window-change pulses.
 - No changes to `/usr/share/omarchy`.
 
@@ -28,19 +30,38 @@ omarchy plugin add https://github.com/neshath/omarchy-edgefx.git --enable
 
 The plugin is intentionally unsandboxed like other Omarchy plugins. Inspect the source before enabling it.
 
-## CLI
+## Controls
+
+Right-click the EdgeFX bar icon for the scene/color/brightness panel. Left-click toggles the effect.
 
 ```bash
 omarchy-shell edgefx status
 omarchy-shell edgefx toggle
-omarchy-shell edgefx setPreset flow
+omarchy-shell edgefx setPreset rainbow
+omarchy-shell edgefx setPreset sunset
+omarchy-shell edgefx setPreset ocean
+omarchy-shell edgefx setPreset aurora
+omarchy-shell edgefx setPreset fire
 omarchy-shell edgefx setAccent '#bb9af7'
 omarchy-shell edgefx setIntensity 0.45
 omarchy-shell edgefx setSpeed 8
+omarchy-shell edgefx setAudioSync true
 omarchy-shell edgefx pulse
 ```
 
-Start optional event-driven pulses:
+## Audio sync
+
+Enable audio sync from the popup or with `setAudioSync true`, then run:
+
+```bash
+edgefx-audio-sync
+```
+
+The helper reads the default PipeWire/PulseAudio stream through `parec`, computes a smoothed RMS level, and sends it to EdgeFX with `setAudioLevel`. Press `Ctrl-C` to stop it. It does not record or save audio; it only sends a normalized level to the running plugin.
+
+## Event pulses
+
+Start optional workspace/window pulses:
 
 ```bash
 edgefx-events
@@ -53,11 +74,9 @@ To run it at login, add it to your Hyprland autostart after installation:
 -- exec-once = "edgefx-events"
 ```
 
-## MVP scope
+## Reference comparison
 
-This version intentionally uses Quickshell `PanelWindow` and `wlr-layer-shell`. The overlay is click-through, so it does not block applications. It provides a stable IPC surface for future audio, notification, battery, cursor, and theme-file integrations.
-
-The current accent defaults to Omarchy's familiar blue. Use the IPC command or bar settings to match the active theme. A future release can read `colors.toml` automatically and add richer shaders without changing the IPC surface.
+The reference video demonstrates a colored perimeter glow, scene presets, manual color selection, brightness, and audio-synchronized pulsing. This MVP now implements those behaviors as a native Omarchy/Quickshell overlay. It does not yet include a full circular color wheel, ambient screen-content sampling, camera-notch geometry, or a dedicated settings application; those are planned follow-ups.
 
 ## License
 
