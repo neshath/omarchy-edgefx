@@ -68,12 +68,15 @@ Item {
   }
   function sceneColor(t) {
     var p = preset
-    if (p === "rainbow" || dynamicColors) return Qt.hsva((t + phase + audioLevel * 0.18) % 1, 0.86, 1, 1)
-    if (p === "sunset") return mix(sunsetA, sunsetB, t)
-    if (p === "ocean") return mix(oceanA, oceanB, t)
-    if (p === "aurora") return mix(auroraA, auroraB, t)
-    if (p === "fire") return mix(fireA, fireB, t)
-    return accent
+    if (p === "rainbow") return Qt.hsva((t + phase + audioLevel * 0.18) % 1, 0.86, 1, 1)
+    var base = accent
+    if (p === "sunset") base = mix(sunsetA, sunsetB, t)
+    else if (p === "ocean") base = mix(oceanA, oceanB, t)
+    else if (p === "aurora") base = mix(auroraA, auroraB, t)
+    else if (p === "fire") base = mix(fireA, fireB, t)
+    if (!dynamicColors) return base
+    var tint = Qt.hsva((phase + audioLevel * 0.18) % 1, 0.55, 1, 1)
+    return mix(base, tint, Math.min(0.28, 0.05 + audioLevel * 0.23))
   }
   function state() {
     return JSON.stringify({ enabled: enabled, preset: preset, accent: String(accent), intensity: intensity, speed: speed, animationMode: animationMode, segmentCount: segmentCount, groupSize: groupSize, audioSync: audioSync, audioLevel: audioLevel, mediaMode: mediaMode, dynamicColors: dynamicColors, bloom: bloom, screens: Quickshell.screens.length })
