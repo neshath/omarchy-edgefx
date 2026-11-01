@@ -13,6 +13,8 @@ A small Omarchy/Quickshell MVP for animated, theme-aware screen-edge lighting. I
 - Optional media overlay with album art, track title, artist, lyrics, and clock/date.
 - `playerctl` bridge for MPRIS-compatible players.
 - Dynamic colors that shift with the active scene and audio level.
+- Automotive-style LED choreography: continuous, line-by-line, grouped, chase-tail, and breathe modes.
+- Configurable segment count and group size for sequential or grouped perimeter animations.
 - Omarchy IPC controls and bar widget.
 - Optional Hyprland event bridge for workspace/window-change pulses.
 - No changes to `/usr/share/omarchy`.
@@ -48,6 +50,11 @@ omarchy-shell edgefx setPreset fire
 omarchy-shell edgefx setAccent '#bb9af7'
 omarchy-shell edgefx setIntensity 0.45
 omarchy-shell edgefx setBloom 0.55
+omarchy-shell edgefx setAnimationMode line
+omarchy-shell edgefx setAnimationMode group
+omarchy-shell edgefx setAnimationMode chase
+omarchy-shell edgefx setSegmentCount 20
+omarchy-shell edgefx setGroupSize 5
 omarchy-shell edgefx setDynamicColors true
 omarchy-shell edgefx setAudioSync true
 omarchy-shell edgefx setMediaMode true
@@ -101,6 +108,10 @@ To run helpers at login, add them to your Hyprland autostart after installation:
 ## Reference comparison
 
 The second reference video demonstrates audio-reactive edge lighting, bloom, dynamic colors, album art, track metadata, lyrics, clock/date, and a settings panel. EdgeFX now implements those core behaviors as an optional native Omarchy/Quickshell overlay. It does not yet provide automatic lyric transcription, full-screen player transport controls, or per-notch geometry for every laptop camera cutout.
+
+## LED choreography
+
+The perimeter is divided into configurable segments. `line` lights one segment at a time, `group` lights a block of adjacent segments, `chase` leaves a fading trail, and `breathe` fades the full perimeter in and out. This is the automotive-style sequential LED behavior requested for interior or exterior lighting effects.
 
 ## License
 

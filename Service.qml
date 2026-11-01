@@ -10,6 +10,9 @@ Item {
   property color accent: "#7aa2f7"
   property real intensity: 0.32
   property int speed: 5
+  property string animationMode: "group"
+  property int segmentCount: 16
+  property int groupSize: 4
   property bool audioSync: false
   property real audioLevel: 0
   property bool mediaMode: false
@@ -41,6 +44,12 @@ Item {
   function setAccent(v) { try { accent = String(v) } catch (e) {} }
   function setIntensity(v) { intensity = clamp(v, 0.05, 1) }
   function setSpeed(v) { speed = Math.round(clamp(v, 1, 20)) }
+  function setAnimationMode(v) {
+    var mode = String(v || "group").toLowerCase()
+    animationMode = ["continuous", "line", "group", "chase", "breathe"].indexOf(mode) >= 0 ? mode : "group"
+  }
+  function setSegmentCount(v) { segmentCount = Math.round(clamp(v, 4, 32)) }
+  function setGroupSize(v) { groupSize = Math.round(clamp(v, 1, segmentCount)) }
   function setAudioSync(v) { audioSync = v === true || String(v) === "true" }
   function setAudioLevel(v) { audioLevel = clamp(v, 0, 1) }
   function setMediaMode(v) { mediaMode = v === true || String(v) === "true" }
@@ -67,7 +76,7 @@ Item {
     return accent
   }
   function state() {
-    return JSON.stringify({ enabled: enabled, preset: preset, accent: String(accent), intensity: intensity, speed: speed, audioSync: audioSync, audioLevel: audioLevel, mediaMode: mediaMode, dynamicColors: dynamicColors, bloom: bloom, screens: Quickshell.screens.length })
+    return JSON.stringify({ enabled: enabled, preset: preset, accent: String(accent), intensity: intensity, speed: speed, animationMode: animationMode, segmentCount: segmentCount, groupSize: groupSize, audioSync: audioSync, audioLevel: audioLevel, mediaMode: mediaMode, dynamicColors: dynamicColors, bloom: bloom, screens: Quickshell.screens.length })
   }
 
   NumberAnimation {
@@ -96,6 +105,9 @@ Item {
     function setAccent(color: string): void { root.setAccent(color) }
     function setIntensity(value: string): void { root.setIntensity(value) }
     function setSpeed(value: string): void { root.setSpeed(value) }
+    function setAnimationMode(value: string): void { root.setAnimationMode(value) }
+    function setSegmentCount(value: string): void { root.setSegmentCount(value) }
+    function setGroupSize(value: string): void { root.setGroupSize(value) }
     function setAudioSync(value: string): void { root.setAudioSync(value) }
     function setAudioLevel(value: string): void { root.setAudioLevel(value) }
     function setMediaMode(value: string): void { root.setMediaMode(value) }
@@ -117,6 +129,9 @@ Item {
         accent: root.accent
         intensity: root.effectiveIntensity
         phase: root.phase
+        animationMode: root.animationMode
+        segmentCount: root.segmentCount
+        groupSize: root.groupSize
         pulseKey: root.pulse
         mediaMode: root.mediaMode
         mediaTitle: root.mediaTitle
@@ -137,6 +152,9 @@ Item {
     required property color accent
     required property real intensity
     required property real phase
+    required property string animationMode
+    required property int segmentCount
+    required property int groupSize
     required property int pulseKey
     required property bool mediaMode
     required property string mediaTitle
@@ -157,6 +175,75 @@ Item {
     anchors { top: true; bottom: true; left: true; right: true }
     mask: Region {}
 
+    function segmentOpacity(index) {
+      var count = Math.max(1, edge.segmentCount)
+      var head = Math.floor(edge.phase * count) % count
+      var distance = Math.abs(index - head)
+      distance = Math.min(distance, count - distance)
+      if (edge.animationMode === "line") return distance === 0 ? 1 : 0.08
+      if (edge.animationMode === "group") return distance < edge.groupSize ? 1 : 0.08
+      if (edge.animationMode === "chase") return Math.max(0.08, 1 - distance / Math.max(1, edge.groupSize * 2))
+      if (edge.animationMode === "breathe") return 0.35 + 0.65 * Math.abs(Math.sin(edge.phase * Math.PI * 2))
+      return 0.08
+    }
+
+    Repeater {
+      model: edge.segmentCount
+      delegate: Rectangle {
+        required property int index
+        visible: edge.animationMode !== "continuous"
+        x: index * (parent.width + 2) / edge.segmentCount
+        y: 0
+        width: Math.max(2, parent.width / edge.segmentCount - 2)
+        height: edge.thickness
+        radius: height / 2
+        color: edge.sceneColor((index / edge.segmentCount + edge.phase) % 1)
+        opacity: edge.alpha * edge.segmentOpacity(index)
+      }
+    }
+    Repeater {
+      model: edge.segmentCount
+      delegate: Rectangle {
+        required property int index
+        visible: edge.animationMode !== "continuous"
+        x: parent.width - edge.thickness
+        y: index * (parent.height + 2) / edge.segmentCount
+        width: edge.thickness
+        height: Math.max(2, parent.height / edge.segmentCount - 2)
+        radius: width / 2
+        color: edge.sceneColor((index / edge.segmentCount + edge.phase + 0.25) % 1)
+        opacity: edge.alpha * edge.segmentOpacity(index)
+      }
+    }
+    Repeater {
+      model: edge.segmentCount
+      delegate: Rectangle {
+        required property int index
+        visible: edge.animationMode !== "continuous"
+        x: (edge.segmentCount - index - 1) * (parent.width + 2) / edge.segmentCount
+        y: parent.height - edge.thickness
+        width: Math.max(2, parent.width / edge.segmentCount - 2)
+        height: edge.thickness
+        radius: height / 2
+        color: edge.sceneColor((index / edge.segmentCount + edge.phase + 0.5) % 1)
+        opacity: edge.alpha * edge.segmentOpacity(index)
+      }
+    }
+    Repeater {
+      model: edge.segmentCount
+      delegate: Rectangle {
+        required property int index
+        visible: edge.animationMode !== "continuous"
+        x: 0
+        y: (edge.segmentCount - index - 1) * (parent.height + 2) / edge.segmentCount
+        width: edge.thickness
+        height: Math.max(2, parent.height / edge.segmentCount - 2)
+        radius: width / 2
+        color: edge.sceneColor((index / edge.segmentCount + edge.phase + 0.75) % 1)
+        opacity: edge.alpha * edge.segmentOpacity(index)
+      }
+    }
+
     Rectangle {
       anchors.fill: parent
       color: "transparent"
@@ -172,25 +259,25 @@ Item {
       opacity: edge.alpha * (edge.preset === "pulse" ? (0.35 + 0.65 * Math.abs(Math.sin(edge.phase * Math.PI * 2))) : 1)
     }
     Rectangle {
-      visible: edge.preset !== "ambient"
+      visible: edge.animationMode === "continuous" && edge.preset !== "ambient"
       x: edge.phase * Math.max(0, parent.width - width); y: 0
       width: Math.max(46, parent.width * 0.12); height: edge.thickness * 2
       color: edge.sceneColor(edge.phase); opacity: Math.min(1, edge.alpha * 1.8); radius: height / 2
     }
     Rectangle {
-      visible: edge.preset !== "ambient"
+      visible: edge.animationMode === "continuous" && edge.preset !== "ambient"
       x: parent.width - edge.thickness * 2; y: edge.phase * Math.max(0, parent.height - height)
       width: edge.thickness * 2; height: Math.max(46, parent.height * 0.12)
       color: edge.sceneColor((edge.phase + 0.25) % 1); opacity: Math.min(1, edge.alpha * 1.8); radius: width / 2
     }
     Rectangle {
-      visible: edge.preset !== "ambient"
+      visible: edge.animationMode === "continuous" && edge.preset !== "ambient"
       x: (1 - edge.phase) * Math.max(0, parent.width - width); y: parent.height - height
       width: Math.max(46, parent.width * 0.12); height: edge.thickness * 2
       color: edge.sceneColor((edge.phase + 0.5) % 1); opacity: Math.min(1, edge.alpha * 1.8); radius: height / 2
     }
     Rectangle {
-      visible: edge.preset !== "ambient"
+      visible: edge.animationMode === "continuous" && edge.preset !== "ambient"
       x: 0; y: (1 - edge.phase) * Math.max(0, parent.height - height)
       width: edge.thickness * 2; height: Math.max(46, parent.height * 0.12)
       color: edge.sceneColor((edge.phase + 0.75) % 1); opacity: Math.min(1, edge.alpha * 1.8); radius: width / 2

@@ -13,6 +13,9 @@ BarWidget {
   readonly property string currentAccent: String(root.setting("accent", "#7aa2f7"))
   readonly property real currentIntensity: Number(root.setting("intensity", 0.32))
   readonly property int currentSpeed: Number(root.setting("speed", 5))
+  readonly property string currentAnimationMode: String(root.setting("animationMode", "group"))
+  readonly property int currentSegmentCount: Number(root.setting("segmentCount", 16))
+  readonly property int currentGroupSize: Number(root.setting("groupSize", 4))
   readonly property bool currentAudioSync: root.asBool(root.setting("audioSync", false))
   readonly property bool currentMediaMode: root.asBool(root.setting("mediaMode", false))
   readonly property bool currentDynamicColors: root.asBool(root.setting("dynamicColors", true))
@@ -35,6 +38,9 @@ BarWidget {
     service.setAccent(root.currentAccent)
     service.setIntensity(root.currentIntensity)
     service.setSpeed(root.currentSpeed)
+    service.setAnimationMode(root.currentAnimationMode)
+    service.setSegmentCount(root.currentSegmentCount)
+    service.setGroupSize(root.currentGroupSize)
     service.setAudioSync(root.currentAudioSync)
     service.setMediaMode(root.currentMediaMode)
     service.setDynamicColors(root.currentDynamicColors)
@@ -101,6 +107,21 @@ BarWidget {
               color: modelData === root.currentPreset ? root.currentAccent : "#2a3040"
               Text { anchors.centerIn: parent; text: modelData; color: "white"; font.pixelSize: 10 }
               MouseArea { anchors.fill: parent; onClicked: { root.commit("preset", modelData); root.sync() } }
+            }
+          }
+        }
+        Text { text: "LED choreography: " + root.currentAnimationMode; color: "#b8bfd8"; font.pixelSize: 12 }
+        Flow {
+          width: parent.width
+          spacing: 5
+          Repeater {
+            model: ["continuous", "line", "group", "chase", "breathe"]
+            delegate: Rectangle {
+              required property string modelData
+              width: 63; height: 26; radius: 6
+              color: modelData === root.currentAnimationMode ? root.currentAccent : "#2a3040"
+              Text { anchors.centerIn: parent; text: parent.modelData; color: "white"; font.pixelSize: 9 }
+              MouseArea { anchors.fill: parent; onClicked: { root.commit("animationMode", modelData); root.sync() } }
             }
           }
         }
