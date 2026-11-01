@@ -168,6 +168,7 @@ Item {
     required property var sceneColor
     property date now: new Date()
     readonly property int thickness: Math.max(2, Math.round(2 + 8 * intensity))
+    readonly property int segmentGap: Math.max(4, Math.round(thickness * 1.5))
     readonly property real alpha: preset === "alert" ? Math.min(1, intensity + 0.2) : intensity
     screen: targetScreen
     visible: active
@@ -183,9 +184,9 @@ Item {
       var head = Math.floor(edge.phase * count) % count
       var distance = Math.abs(index - head)
       distance = Math.min(distance, count - distance)
-      if (edge.animationMode === "line") return distance === 0 ? 1 : 0.08
-      if (edge.animationMode === "group") return distance < edge.groupSize ? 1 : 0.08
-      if (edge.animationMode === "chase") return Math.max(0.08, 1 - distance / Math.max(1, edge.groupSize * 2))
+      if (edge.animationMode === "line") return distance === 0 ? 1 : 0
+      if (edge.animationMode === "group") return distance < edge.groupSize ? 1 : 0
+      if (edge.animationMode === "chase") return Math.max(0, 1 - distance / Math.max(1, edge.groupSize * 2))
       if (edge.animationMode === "breathe") return 0.35 + 0.65 * Math.abs(Math.sin(edge.phase * Math.PI * 2))
       return 0.08
     }
@@ -195,9 +196,9 @@ Item {
       delegate: Rectangle {
         required property int index
         visible: edge.animationMode !== "continuous"
-        x: index * (parent.width + 2) / edge.segmentCount
+        x: index * (parent.width + edge.segmentGap) / edge.segmentCount
         y: 0
-        width: Math.max(2, parent.width / edge.segmentCount - 2)
+        width: Math.max(2, parent.width / edge.segmentCount - edge.segmentGap)
         height: edge.thickness
         radius: height / 2
         color: edge.sceneColor((index / edge.segmentCount + edge.phase) % 1)
@@ -210,9 +211,9 @@ Item {
         required property int index
         visible: edge.animationMode !== "continuous"
         x: parent.width - edge.thickness
-        y: index * (parent.height + 2) / edge.segmentCount
+        y: index * (parent.height + edge.segmentGap) / edge.segmentCount
         width: edge.thickness
-        height: Math.max(2, parent.height / edge.segmentCount - 2)
+        height: Math.max(2, parent.height / edge.segmentCount - edge.segmentGap)
         radius: width / 2
         color: edge.sceneColor((index / edge.segmentCount + edge.phase + 0.25) % 1)
         opacity: edge.alpha * edge.segmentOpacity(index)
@@ -223,9 +224,9 @@ Item {
       delegate: Rectangle {
         required property int index
         visible: edge.animationMode !== "continuous"
-        x: (edge.segmentCount - index - 1) * (parent.width + 2) / edge.segmentCount
+        x: (edge.segmentCount - index - 1) * (parent.width + edge.segmentGap) / edge.segmentCount
         y: parent.height - edge.thickness
-        width: Math.max(2, parent.width / edge.segmentCount - 2)
+        width: Math.max(2, parent.width / edge.segmentCount - edge.segmentGap)
         height: edge.thickness
         radius: height / 2
         color: edge.sceneColor((index / edge.segmentCount + edge.phase + 0.5) % 1)
@@ -238,9 +239,9 @@ Item {
         required property int index
         visible: edge.animationMode !== "continuous"
         x: 0
-        y: (edge.segmentCount - index - 1) * (parent.height + 2) / edge.segmentCount
+        y: (edge.segmentCount - index - 1) * (parent.height + edge.segmentGap) / edge.segmentCount
         width: edge.thickness
-        height: Math.max(2, parent.height / edge.segmentCount - 2)
+        height: Math.max(2, parent.height / edge.segmentCount - edge.segmentGap)
         radius: width / 2
         color: edge.sceneColor((index / edge.segmentCount + edge.phase + 0.75) % 1)
         opacity: edge.alpha * edge.segmentOpacity(index)
@@ -248,6 +249,7 @@ Item {
     }
 
     Rectangle {
+      visible: edge.animationMode === "continuous" || edge.animationMode === "breathe"
       anchors.fill: parent
       color: "transparent"
       border.width: edge.thickness + Math.round(edge.bloom * 18)
@@ -255,6 +257,7 @@ Item {
       opacity: edge.alpha * edge.bloom * 0.18
     }
     Rectangle {
+      visible: edge.animationMode === "continuous" || edge.animationMode === "breathe"
       anchors.fill: parent
       color: "transparent"
       border.width: edge.thickness

@@ -54,11 +54,11 @@ def opacity(mode: str, index: int, phase: float, group_size: int = 4):
     distance = abs(index - head)
     distance = min(distance, SEGMENTS - distance)
     if mode == "line":
-        return 1.0 if distance == 0 else 0.08
+        return 1.0 if distance == 0 else 0.0
     if mode == "group":
-        return 1.0 if distance < group_size else 0.08
+        return 1.0 if distance < group_size else 0.0
     if mode == "chase":
-        return max(0.08, 1.0 - distance / max(1, group_size * 2))
+        return max(0.0, 1.0 - distance / max(1, group_size * 2))
     if mode == "breathe":
         return 0.35 + 0.65 * abs(math.sin(phase * math.pi * 2))
     return 1.0 if distance < 2 else 0.18
@@ -82,17 +82,22 @@ def render(mode: str, frame: int):
         alpha = int(255 * opacity(mode, i, phase) * (0.65 + audio * 0.35))
         color = rgb(i / SEGMENTS + phase * 0.35 + audio * 0.1, 0.82, 1.0)
         c = (*color, alpha)
-        gd.line((x, y, next_x, next_y), fill=c, width=10)
+        sx, sy = x + (next_x - x) * 0.07, y + (next_y - y) * 0.07
+        ex, ey = next_x - (next_x - x) * 0.07, next_y - (next_y - y) * 0.07
+        gd.line((sx, sy, ex, ey), fill=c, width=10)
     glow = glow.filter(ImageFilter.GaussianBlur(18))
     base = Image.alpha_composite(base, glow)
 
-    draw = ImageDraw.Draw(base)
+    segments_layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(segments_layer)
     for i, (x, y) in enumerate(points):
         next_x, next_y = points[(i + 1) % len(points)]
         alpha = int(255 * opacity(mode, i, phase) * (0.72 + audio * 0.28))
         color = rgb(i / SEGMENTS + phase * 0.35 + audio * 0.1, 0.82, 1.0)
-        draw.line((x, y, next_x, next_y), fill=(*color, alpha), width=4)
-    return base.convert("RGB")
+        sx, sy = x + (next_x - x) * 0.07, y + (next_y - y) * 0.07
+        ex, ey = next_x - (next_x - x) * 0.07, next_y - (next_y - y) * 0.07
+        draw.line((sx, sy, ex, ey), fill=(*color, alpha), width=5)
+    return Image.alpha_composite(base, segments_layer).convert("RGB")
 
 
 def main():
