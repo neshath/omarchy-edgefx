@@ -113,6 +113,16 @@ The second reference video demonstrates audio-reactive edge lighting, bloom, dyn
 
 The perimeter is divided into configurable segments. `line` lights one segment at a time, `group` lights a block of adjacent segments, `chase` leaves a fading trail, and `breathe` fades the full perimeter in and out. This is the automotive-style sequential LED behavior requested for interior or exterior lighting effects.
 
+## Headless simulation
+
+The repository includes a compositor-independent visual harness for checking the choreography without an Omarchy VM:
+
+```bash
+python3 tests/simulate_edgefx.py
+```
+
+It renders `tests/edgefx-choreography-preview.mp4`. This validates the segment timing, grouping, chase trail, color motion, and audio-level modulation model. It does not replace a real Quickshell/Hyprland session for testing Wayland layer mapping or click-through behavior.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
