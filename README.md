@@ -2,6 +2,9 @@
 
 A small Omarchy/Quickshell MVP for animated, theme-aware screen-edge lighting. It now combines the edge-lighting behavior from the reference videos with an optional media-aware ambient display.
 
+<img width="2324" height="1307" alt="image" src="https://github.com/user-attachments/assets/b35665f9-ce0e-4c29-8edd-616a0c10333c" />
+
+
 ## Features
 
 - Click-through Wayland overlay on every active monitor.
