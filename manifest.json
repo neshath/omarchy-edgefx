@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.neshath.edgefx",
+  "name": "EdgeFx",
+  "version": "1.0.0",
+  "author": "neshath",
+  "description": "GPU-accelerated, theme-aware animated edge lighting for your screen edges and window borders.",
+  "keepLoaded": true,
+  "kinds": ["service", "bar-widget"],
+  "entryPoints": {
+    "service": "Service.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "EdgeFx",
+    "description": "Toggle and tune animated edge lighting",
+    "category": "Effects",
+    "allowMultiple": false
+  }
+}
